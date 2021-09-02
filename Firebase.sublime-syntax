@@ -1,0 +1,171 @@
+%YAML 1.2
+---
+# 'Firestore Rules Syntax: version 1.1'
+first_line_match: '^service\scloud\.firestore\s\{'
+name: Firebase Rules
+file_extensions:
+  - rule
+  - rules
+variables:
+  buildin_types: (request|math|user|duration|string|int|cloud)
+  access_control: (get|list|read|create|update|delete|write)
+  language_constant: (true|false|null|in|function)
+scope: source.firerules
+contexts:
+  main:
+    - include: rules_version
+    - include: expression
+    - include: block
+  expression:
+    - include: types
+    - include: comment
+    - include: keyword
+    - include: number
+    - include: string
+    - include: constants
+    - include: access-control
+    - include: function
+    - include: operator
+    - include: variable
+  block:
+    - match: \{
+      scope: punctuation.section.block.begin.firerules
+      push:
+        - meta_scope: meta.block.firerules
+        - match: \}
+          scope: punctuation.section.block.end.firerules
+          pop: true
+        - include: expression
+
+  comment:
+    - match: '#'
+      scope: punctuation.definition.comment.firerules
+      push:
+        - meta_scope: comment.line.number-sign.firerules
+        - match: $
+          pop: true
+    - match: '//'
+      scope: punctuation.definition.comment.firerules
+      push:
+        - meta_scope: comment.line.double-slash.firerules
+        - match: $
+          pop: true
+  types:
+    - match: \b({{buildin_types}})\b
+      scope: support.type.firerules
+  string:
+    - match: \'
+      scope: punctuation.definition.string.begin.firerules
+      push:
+        - meta_scope: string.quoted.single.firerules
+        - match: \'
+          scope: punctuation.definition.string.end.firerules
+          pop: true
+    - match: (")
+      scope: punctuation.definition.string.begin.firerules
+      push:
+        - meta_scope: string.quoted.double.firerules
+        - match: (")
+          scope: punctuation.definition.string.end.firerules
+          pop: true
+  keyword:
+    - include: keyword-if
+    - include: keyword-return
+    - include: keyword-is
+    - include: keyword-in
+    - include: keyword-function
+  keyword-if:
+    - match: \bif\b
+      scope: keyword.control.conditional.if.firerules
+  keyword-return:
+    - match: \breturn\b
+      scope: keyword.control.flow.return.firerules
+  keyword-is:
+    - match: \bis\b
+      scope: keyword.operator.logical.firerules
+  keyword-function:
+    - match: \bfunction\b
+      scope: keyword.context.firerules
+  keyword-in:
+    - match: '\bin\b'
+      scope: keyword.operator.arithmetic.firerules
+  number:
+    - include: number-binary
+    - include: number-hex
+    - include: number-float
+    - include: number-dec
+  number-binary:
+    - match: ([01])+
+      scope: constant.numeric.value.firerules
+
+  number-hex:
+    - match: (0[Xx]\h)+
+      scope: constant.numeric.value.firerules
+  number-dec:
+    - match: \d+
+      scope: constant.numeric.value.firerules
+  number-float:
+    - match: ''
+  access-control:
+    # Access control
+    - match: '\b{{access_control}}'
+      scope: storage.modifier.firerules
+      push:
+        - match: '[,:;]'
+          scope: punctuation.terminator.firerules
+          pop: true
+  constants:
+    - match: '{{language_constant}}'
+      scope: constant.language.firerules
+  operator:
+    - match: '='
+      scope: keyword.operator.assignment.firerules
+    - match: '!=|==|\|\|'
+      scope: keyword.operator.assignment.firerules
+    - match: '<|>'
+      scope: keyword.operator.comparison.firerules
+    - match: '!|\-'
+      scope: keyword.operator.logical.firerules
+    - match: '\&'
+      scope: keyword.operator.logical.firerules
+    - match: '\&\&'
+      scope: keyword.operator.arithmetic.firerules
+  rules_version:
+    - match: \brules_version\b
+      scope: variable.language.firerules
+  variable:
+    - match: \b(request|resource)\b
+      scope: variable.language.firerules
+  function:
+    - match: '[\.\s\(]([a-zA-Z]+)(?=\()'
+      comment: Function name
+      captures:
+        1: support.function.firerules
+    - match: \(
+      scope: punctuation.section.group.begin.firerules
+      comment: Function parameters
+      push:
+        - match: \)
+          scope: punctuation.section.group.end.firerules
+          pop: true
+        - match: '\b(?<![\''\"])[a-zA-Z0-9_]+(?![\''\"])\b'
+          scope: variable.parameter.firerules
+        - include: string
+    - match: '\/([a-zA-Z0-9_]+)(?=[\s\/])'
+      comment: Path match literal
+      captures:
+        1: string.unquoted.firerules
+    - match: '\/({[^}]+})(?=[\s\/])'
+      comment: Path match variable
+      captures:
+        1: variable.parameter.firerules
+    - match: \bservice|match|allow\b
+      scope: support.function.firerules
+    - match: '\.([a-zA-Z0-9_]+)'
+      comment: Type member
+      captures:
+        1: variable.parameter.firerules
+  function-define:
+    - match: ''
+  function-call:
+    - match: ''
