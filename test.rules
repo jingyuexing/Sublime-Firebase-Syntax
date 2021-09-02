@@ -9,6 +9,7 @@ service cloud.firestore {
    }
 }
 
+
 // Check if the request is authenticated
 function isAuthenticated(p1, p2) {
    return request.auth != null;
